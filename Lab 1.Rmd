@@ -1,0 +1,188 @@
+---
+title: "Lab 1: Intro to R"
+author: "Julian Adames-Ng"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+```
+
+### Exercise 1
+
+What command would you use to extract just the counts of girls baptized? Try it!
+
+The vector that was returned has 82 elements in it.  These correnspond to the count of girls baptized.
+
+```{r view-girls-counts}
+arbuthnot$girls
+
+
+#5218 + 4683
+
+#sum of boys column and girls column
+arbuthnot$boys + arbuthnot$girls
+
+
+#SCRAPWORK
+#scatterplot and curve
+#ggplot(data = arbuthnot, aes(x = year, y = total)) + geom_line()
+#ggplot(data = arbuthnot, aes(x = year, y = total)) + geom_point()
+
+
+#ratio of births single case
+#5218 / 4683
+
+#proportion of boys single case
+#5218 / (5218 + 4683)
+
+
+
+
+
+```
+
+
+### Exercise 2
+
+Is there an apparent trend in the number of girls baptized over the years? How would you describe it? (To ensure that your lab report is comprehensive, be sure to include the code needed to make the plot as well as your written interpretation.)
+
+There's an increasing trend in girl baptisms moving toward the year 1700.  When compared to boys though, they both showed an increasing trend.  A possibility is that this can be due to advancements that led up to industrialization like the printing press which may have allowed a faster spread of the Christianity.
+
+```{r trend-girls}
+
+#compare girl births to boy births
+ggplot(data = arbuthnot, aes(x = year, y = girls)) + geom_point()
+ggplot(data = arbuthnot, aes(x = year, y = boys)) + geom_point()
+
+
+```
+
+
+### Exercise 3
+
+Now, generate a plot of the proportion of boys born over time. What do you see?
+
+The data points are scattered, but it seems that the proportion of boys over has stayed consistently above 0.50 for the entirety of Dr. Arbuthnot's study.  The vector "more_boys" confirms this as each of its element values assesses whether there were more boys than girls during the given year and they all hold true.
+
+```{r plot-prop-boys-arbuthnot}
+
+
+# x %>% f(y) means f(x, y)
+arbuthnot <- arbuthnot %>% mutate(total = boys + girls)
+
+#ratio of births vector case
+arbuthnot <- arbuthnot %>% mutate(boy_to_girl_ratio = boys / girls)
+#arbuthnot$boy_to_girl_ratio
+
+#proportion of boys vector case
+arbuthnot <- arbuthnot %>% mutate(boy_ratio = boys / total)
+ggplot(data = arbuthnot, aes(x = year, y = boy_ratio)) + geom_point()
+#arbuthnot$boy_ratio
+
+#proportion of girls vector case
+arbuthnot <- arbuthnot %>% mutate (girl_ratio = girls / total)
+#ggplot(data = arbuthnot, aes(x = year, y = girl_ratio)) + geom_line()
+
+
+#ggplot(data = arbuthnot, aes(x = year, y = boy_to_girl_ratio)) + geom_point()
+
+#ggplot(data = arbuthnot, aes(x = boys, y = girls)) + geom_point()
+arbuthnot <- arbuthnot %>% mutate(more_boys = boys > girls)
+arbuthnot$more_boys
+
+
+
+```
+
+
+### Exercise 4
+
+What years are included in this data set? What are the dimensions of the data frame? What are the variable (column) names?
+
+The data set includes years from 1940 to 2002.
+
+The dimensions of the data frame are 63 rows by 3 columns where labeled as "year", "boys", and "girls" respectively.
+
+```{r dim-present}
+
+data('present', package = 'openintro')
+
+present
+present$year
+
+```
+
+
+### Exercise 5
+
+How do these counts compare to Arbuthnot’s? Are they of a similar magnitude?
+
+The counts from the "present" data set are magnitudes larger than the counts from Dr. Arbuthnot's original data set.  There are less data points, but the population of boys and girls has increased over 200-fold.
+```{r count-compare}
+
+
+data('present', package = 'openintro')
+
+
+#compare totals
+present %>% summarize(minP = min(boys), maxP = max(boys))
+arbuthnot %>% summarize(minA = min(boys), maxA = max(boys))
+
+
+
+
+
+```
+
+
+### Exercise 6
+
+Make a plot that displays the proportion of boys born over time. What do you see? Does Arbuthnot’s observation about boys being born in greater proportion than girls hold up in the U.S.? Include the plot in your response. Hint: You should be able to reuse your code from Exercise 3 above, just replace the dataframe name.
+
+
+I plotted the Boy Proportion vs Year graphs for each data set.  Although the proportion decreased for the entirety of the study for the "present" data set, it also remained above 0.50.  The vector "more_boys" confirms this.  Dr. Arbuthnot's findings hold true still.
+
+```{r plot-prop-boys-present}
+
+#create a new column for totals in present data set
+present <- present %>% mutate(total = boys + girls)
+
+#create a column for proportion of boys
+present <- present %>% mutate(boys_ratio2 = boys / total )
+
+#compare boy ratios
+ggplot(data = arbuthnot, aes(x = year, y = boy_ratio)) + geom_point()
+ggplot(data = present, aes(x = year, y = boys_ratio2)) + geom_point()
+
+#truth column
+present <- present %>% mutate(more_boys = boys > girls)
+present$more_boys
+
+
+
+
+
+```
+
+
+### Exercise 7
+
+In what year did we see the most total number of births in the U.S.? Hint: First calculate the totals and save it as a new variable. Then, sort your dataset in descending order based on the total column. You can do this interactively in the data viewer by clicking on the arrows next to the variable names. To include the sorted result in your report you will need to use two new functions: arrange (for sorting). We can arrange the data in a descending order with another function: desc (for descending order). The sample code is provided below.
+
+The visual shows that the largest data point seems to correspond to a year in the early 1960s.  Using the arrange() and desc() functions, we can confirm that the largest total came from the year 1961 with a total of 4,268,326 children.
+
+```{r find-max-total}
+
+#new totals column created in previous exercise
+
+#visual check
+ggplot(data = present, aes(x = year, y = total)) + geom_point()
+
+#sort present data set by total in descending order
+arrange(present, desc(total))
+
+```
+
