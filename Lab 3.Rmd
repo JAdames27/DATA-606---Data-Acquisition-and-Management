@@ -1,0 +1,136 @@
+---
+title: "Lab 3"
+author: "Julian Adames-Ng"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+
+```
+
+### Exercise 1
+
+What does a streak length of 1 mean, i.e. how many hits and misses are in a streak of 1? What about a streak length of 0?
+
+-A streak of length 1 means that you made the very first shot, but missed the second so the streak count is reset.  A streak of length zero means you missed the first shot on a given run.  The streak count resets after each miss.
+```{r code-chunk-label1}
+
+glimpse(kobe_basket)
+
+```
+
+### Exercise 2
+
+Describe the distribution of Kobe’s streak lengths from the 2009 NBA finals. What was his typical streak length? How long was his longest streak of baskets? Make sure to include the accompanying plot in your answer.
+
+-The distribution is skewed right.  Kobe's typical streak length was 0 since that is the mode of the data set.  His longest streak length was 4.
+
+
+```{r code-chunk-label2}
+kobe_streak <- calc_streak(kobe_basket$shot)
+
+ggplot(data = kobe_streak, aes(x = length)) + geom_bar() + ggtitle("Kobe's Streaks")
+```
+
+### Exercise 3
+
+In your simulation of flipping the unfair coin 100 times, how many flips came up heads? Include the code for sampling the unfair coin in your response. Since the markdown file will run the code, and generate a new sample each time you Knit it, you should also “set a seed” before you sample. Read more about setting a seed below.
+
+-In my simulation, heads came up 26 times.
+
+```{r code-chunk-label3}
+
+coin_outcomes <- c("heads", "tails")
+#sample(coin_outcomes, size = 1, replace = TRUE)
+
+sim_fair_coin <- sample(coin_outcomes, size = 100, replace = TRUE)
+
+#sim_fair_coin
+
+#table(sim_fair_coin)
+
+#unfair coin
+set.seed(35797)
+sim_unfair_coin <- sample(coin_outcomes, size = 100, replace = TRUE, prob = c(0.2, 0.8))
+
+table(sim_unfair_coin)
+
+```
+
+### Exercise 4
+
+What change needs to be made to the sample function so that it reflects a shooting percentage of 45%? Make this adjustment, then run a simulation to sample 133 shots. Assign the output of this simulation to a new object called sim_basket.
+
+-To change the shooting percentage to 45%, we must assign the probabilities of the respective outcomes as 0.45 for "H" and 0.55 for "M".
+
+
+```{r code-chunk-label4}
+
+shot_outcomes <- c("H", "M")
+sim_basket <- sample(shot_outcomes, size = 133, replace = TRUE, prob = c(0.45, 0.55))
+
+sim_basket
+table(sim_basket)
+
+```
+
+### Exercise 5
+
+Using calc_streak, compute the streak lengths of sim_basket, and save the results in a data frame called sim_streak.
+
+```{r code-chunk-label5}
+
+sim_streak <- calc_streak(sim_basket)
+
+sim_streak
+ggplot(data = sim_streak, aes(x = length)) + geom_bar() + ggtitle("Independent Shooter's Streaks")
+
+```
+
+### Exercise 6
+
+Describe the distribution of streak lengths. What is the typical streak length for this simulated independent shooter with a 45% shooting percentage? How long is the player’s longest streak of baskets in 133 shots? Make sure to include a plot in your answer.
+
+-This distribution is also skewed right.  The typical streak length for the independent shooter is 0 and the longest streak in 133 shots is 14.
+
+
+```{r code-chunk-label6}
+
+set.seed(922)
+ggplot(data = sim_streak, aes(x = length)) + geom_bar() + ggtitle("Independent Shooter's Streaks")
+
+```
+
+### Exercise 7
+
+If you were to run the simulation of the independent shooter a second time, how would you expect its streak distribution to compare to the distribution from the question above? Exactly the same? Somewhat similar? Totally different? Explain your reasoning.
+
+-Considering the seed function, it would be exactly the same.  Disregarding the seed function, it should remain the same or very similar if we're talking about the distribution on the whole.  The individual shot streaks may change because each run of the experiment yields different results, but the behavior overall should skew right as in the previous run.
+
+```{r code-chunk-label7}
+
+sim_streak1 <- calc_streak(sim_basket)
+
+sim_streak1
+ggplot(data = sim_streak, aes(x = length)) + geom_bar() + ggtitle("Independent Shooter's Streaks")
+
+```
+
+### Exercise 8
+
+How does Kobe Bryant’s distribution of streak lengths compare to the distribution of streak lengths for the simulated shooter? Using this comparison, do you have evidence that the hot hand model fits Kobe’s shooting patterns? Explain.
+
+-Both distributions skew right/have a right tail with a mode of 0 and similar longest streaks. The simulated shooter is a good model that mostly fits Kobe's shooting patterns.
+
+```{r code-chunk-label8}
+
+set.seed(927)
+ggplot(data = sim_streak, aes(x = length)) + geom_bar() +ggtitle("Independent Shooter's Streaks")
+ggplot(data = kobe_streak, aes(x = length)) + geom_bar() + ggtitle("Kobe's Streaks")
+
+```
+
+...
