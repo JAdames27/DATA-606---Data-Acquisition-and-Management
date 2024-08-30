@@ -1,0 +1,280 @@
+---
+title: "Do Seat Belt Laws Predict a Reduction in Road Casualties?"
+author: "Julian Adames-Ng"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+```
+
+### Loading the Data: Time-Series
+
+"UKDriverDeaths is a time series giving the monthly totals of car drivers in Great Britain killed or seriously injured Jan 1969 to Dec 1984. Compulsory wearing of seat belts was introduced on 31 Jan 1983." - R Documentation
+
+
+
+```{r code-chunk-label}
+
+UKDriverDeaths
+
+```
+
+### Loading the Data: Creating a Data-Frame
+
+"Seatbelts is more information on the same problem." - R Documentation
+
+
+
+```{r code-chunklabel1}
+  
+Seatbelts
+
+#Create a data frame from Seatbelts
+sbelts <- data.frame(Seatbelts)
+
+sbelts
+
+```
+
+### Parsing the Data:
+
+DnoLaw shows the data BEFORE the seat belt law was introduced.
+
+DLaw shows the data AFTER the seat belt law was introduced.
+
+
+
+```{r code-chunklabel2}
+
+DnoLaw <- sbelts %>% filter(law == 0)
+DLaw <- sbelts %>% filter(law == 1)
+
+DnoLaw
+DLaw
+```
+
+### Comparing Averages:
+
+We see that there is a significant reduction in the average amount of deaths after the seat belt law was introduced.  
+
+The mean for ALL deaths before the introduction of the law was 1717.751.  After the law, the mean decreased to 1321.696.
+
+Parsing the data, we see that the mean for DRIVER deaths before the introduction of the law was 125.8698.  After the law, the mean decreased to 100.2609.
+
+Parsing the data further, we can also compare the average FRONT SEAT passenger deaths/serious injuries.  We see a significant reduction from 873.4556 to 570.9565.
+
+However, the average REAR SEAT passenger deaths/serious injuries increased from 400.3195 to 407.7391.  When compared to the reduction in overall or front seat deaths, this increase is negligible.
+
+
+
+```{r code-chunklabel3}
+
+cat(" Overall Mean: \n", mean(sbelts$drivers), 
+    "\n Mean (Pre-Law): \n", mean(DnoLaw$drivers), 
+    "\n Mean (Post-Law): \n", mean(DLaw$drivers),
+    
+    "\n\n Mean - Driver Deaths (Pre-Law): \n", mean(DnoLaw$DriversKilled), 
+    "\n Mean - Driver Deaths (Post-Law): \n", mean(DLaw$DriversKilled),
+    
+    "\n\n Mean - Front Seat Passenger Deaths/Serious Injuries (Pre-Law): \n", mean(DnoLaw$front), 
+    "\n Mean - Front Seat Passenger Deaths/Serious Injuries (Post-Law): \n", mean(DLaw$front),
+    
+    "\n\n Mean - Rear Seat Passenger Deaths/Serious Injuries (Pre-Law): \n", mean(DnoLaw$rear), 
+    "\n Mean - Rear Seat Passenger Deaths/Serious Injuries (Post-Law): \n", mean(DLaw$rear))
+
+```
+
+### Comparing Variability:
+
+We also see that the variability of road death data had reduced significantly post-law. This indicates more consistency in the data.
+
+The standard deviation for front seat passenger deaths decreased significantly and
+the standard deviation for rear seat passenger deaths decreased less so:
+
+
+
+```{r code-chunklabel4}
+
+
+cat(" Overall Standard Deviation: \n", sd(sbelts$drivers), 
+    "\n Standard Deviation (Pre-Law): \n", sd(DnoLaw$drivers), 
+    "\n Standard Deviation (Post-Law): \n",sd(DLaw$drivers),
+    
+    "\n\n Standard Deviation - Driver Deaths (Pre-Law): \n", sd(DnoLaw$DriversKilled), 
+    "\n Standard Deviation - Driver Deaths (Post-Law): \n",sd(DLaw$DriversKilled),
+    
+    "\n\n Standard Deviation - Front (Pre-Law):\n", sd(DnoLaw$front), 
+    "\n Standard Deviation - Front (Post-Law):\n", sd(DLaw$front),
+
+    "\n\n Standard Deviation - Rear (Pre-Law): \n", sd(DnoLaw$rear), 
+    "\n Standard Deviation - Rear (Post-Law): \n", sd(DLaw$rear))
+
+```
+
+This reduction in variation is also evidenced by the range of road deaths in each scenario.
+After the law, the maximum and minimum road deaths decreased by a good amount each.
+
+
+
+```{r code-chunklabel5}
+
+cat(" Maximum (Pre-Law):", max(range(DnoLaw$drivers)), 
+    "\n Maximum (Post-Law)", max(range(DLaw$drivers)),
+    
+    "\n\n Minimum (Pre-Law):", min(range(DnoLaw$drivers)), 
+    "\n Minimum (Post-Law)", min(range(DLaw$drivers)),
+
+    "\n\n Range (Pre-Law):", max(range(DnoLaw$drivers))-min(range(DnoLaw$drivers)), 
+    "\n Range (Post-Law)", max(range(DLaw$drivers))-min(range(DLaw$drivers)))
+
+
+```
+
+### Rate of Fewer Deaths:
+
+We can compare the average reduction in deaths to the average number of deaths prior to the law's introduction using a ratio.
+
+
+
+```{r code-chunklabel6}
+
+reduc_rate <- (mean(DnoLaw$drivers)-mean(DLaw$drivers))/mean(DnoLaw$drivers)
+reduc_drivers <- (mean(DnoLaw$DriversKilled)-mean(DLaw$DriversKilled))/mean(DnoLaw$DriversKilled)
+reduc_front <- (mean(DnoLaw$front)-mean(DLaw$front))/mean(DnoLaw$front)
+reduc_rear <- (mean(DnoLaw$rear)-mean(DLaw$rear))/mean(DnoLaw$rear)
+
+cat(" Average Total Death Reduction Rate: ", "\n", reduc_rate, 
+    "\n\n Average Reduction Rate in Driver Deaths: \n", reduc_drivers,
+    "\n\n Average Reduction Rate in Front Seat Deaths: \n", reduc_front, 
+    "\n\n Average Reduction Rate in Rear Seat Deaths: \n", reduc_rear)
+
+```
+
+### Visualizing the Data
+
+Below we see the visualized time-series data on road deaths.  
+
+The first graph shows the entire timeline of data with Time (in years) on the horizontal axis.  
+
+
+
+```{r code-chunklabel7}
+
+plot.ts(UKDriverDeaths)
+
+```
+
+The second graph shows the timeline of data BEFORE the law was enacted (the first 169 months), with Time (in months SINCE THE START OF THE STUDY) on the horizontal axis.
+
+
+
+```{r code-chunklabel8}
+plot.ts(DnoLaw$drivers)
+
+```
+
+The third graph shows the timeline of data AFTER the law was enacted (the last 23 months), with Time (in months SINCE THE ENACTMENT OF THE LAW) on the horizontal axis.
+
+
+
+```{r code-chunklabel9}
+
+plot.ts(DLaw$drivers)
+
+```
+
+Since we're limited to 23 months worth of data after the law was enacted, for the following graphs I chose to zoom in on four particular 22-26 month time periods before the enactment of the law.  I did this in hopes of having a more comparable amount of data points, being sure to include the lowest dips in road deaths for each period.  I paired each 22-26 month pre-law period to the 23 month post-law period.
+
+We can visually see that the scaling for the number of deaths, regardless of time frame, decreases significantly after the passing of the seat belt law.
+
+
+
+#### First 23 Months (Pre-Law) vs Final 23 Months (Post-Law)
+```{r code-chunklabel10}
+
+#first 23 months
+dNL23 <- DnoLaw %>% slice(1:23)
+par(mfrow=c(2,1))
+plot.ts(dNL23$drivers)
+plot.ts(DLaw$drivers)
+
+```
+
+#### Months 25-50 (Pre-Law) vs Final 23 Months (Post-Law)
+```{r code-chunklabel11}
+
+#months 25-50
+dNL2550 <- DnoLaw %>% slice(25:50)
+par(mfrow=c(2,1))
+plot.ts(dNL2550$drivers)
+plot.ts(DLaw$drivers)
+
+
+```
+
+#### Months 62-84 (Pre-Law) vs Final 23 Months (Post-Law)
+```{r code-chunklabel12}
+
+#months 62-84
+dNL6284 <- DnoLaw %>% slice(62:84)
+par(mfrow=c(2,1))
+plot.ts(dNL6284$drivers)
+plot.ts(DLaw$drivers)
+
+```
+
+#### Months 85-107 (Pre-Law) vs Final 23 Months (Post-Law)
+```{r code-chunklabel13}
+
+#months 85-107
+dNL85107 <- DnoLaw %>% slice(85:107)
+par(mfrow=c(2,1))
+plot.ts(dNL85107$drivers)
+plot.ts(DLaw$drivers)
+
+
+#summary(UKDriverDeaths)
+#summary(DnoLaw$drivers)
+#summary(DLaw$drivers)
+
+```
+
+#### Boxplots of the Summary Data
+
+Left shows the pre-law boxplot
+Right shows the post-law boxplot
+
+```{r code-chunklabel14}
+
+sbelts <- sbelts %>% 
+  mutate(Law_Status = ifelse(sbelts$law > 0, "Passed", "Not Passed"))
+
+p <- ggplot(sbelts, aes(x = Law_Status, y = drivers))+
+geom_boxplot()
+p
+
+```
+
+#### Comparison of Other Variables Using Scatterplots
+
+The data set also included information on distance traveled and price of petroleum.  I used a scatter plot to visualize the correlation between these variables and road deaths.  I also normalized the data to get a better visual.  Although there seems to be a linear correlation between both distance traveled vs road deaths and petroleum price and road deaths, using the cor() function gives us the correlation coefficient for each.  We see that the values for r are -0.4447631 and -0.4576675 respectively.  Although there seems to be a linear relationship in each case, the values for r indicate a weak correlation.  There is not sufficient evidence that variables other than the status of the seat belt law are responsible for a rise or reduction in road deaths.
+
+```{r code-chunklabel15}
+
+sbelts <- sbelts %>% 
+  mutate(deaths_norm = sbelts$drivers/max(sbelts$drivers))
+sbelts <- sbelts %>% 
+  mutate(kms_norm = sbelts$kms/max(sbelts$kms))
+sbelts <- sbelts %>% 
+  mutate(p_norm = sbelts$PetrolPrice/max(sbelts$PetrolPrice))
+
+DATA606::plot_ss(x = sbelts$kms_norm, y = sbelts$deaths_norm, showSquares =TRUE)
+cor(sbelts$kms, sbelts$drivers)
+
+DATA606::plot_ss(x = sbelts$p_norm, y = sbelts$deaths_norm, showSquares =TRUE)
+cor(sbelts$PetrolPrice, sbelts$drivers)
+
+```

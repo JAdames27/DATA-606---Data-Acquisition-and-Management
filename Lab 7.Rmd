@@ -1,0 +1,362 @@
+---
+title: "Lab 7: Inference for Numerical Data"
+author: "Julian Adames-Ng"
+date: "`r Sys.Date()`"
+output: openintro::lab_report
+---
+
+```{r load-packages, message=FALSE}
+library(tidyverse)
+library(openintro)
+library(infer)
+
+data('yrbss', package='openintro')
+
+yrbss
+
+nrow(yrbss)
+
+```
+
+### Exercise 1
+
+What are the cases in this data set? How many cases are there in our sample?
+
+-Each row corresponds to a case. There are 13583 cases in this data set.
+
+```{r code-Exercise2}
+summary(yrbss$weight)
+```
+
+### Exercise 2
+
+How many observations are we missing weights from?
+
+-There are 1004 NA values which correspond to missing weights.
+
+...
+
+```{r code-Exercise3}
+
+yrbss <- yrbss %>% 
+  mutate(physical_3plus = ifelse(yrbss$physically_active_7d > 2, "yes", "no"))
+
+yrbss
+
+yrbss %>%
+  group_by(physical_3plus) %>%
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+
+yrbss$physical_3plus <- as.factor(yrbss$physical_3plus)
+
+yrb_plot <- yrbss %>%
+  filter(!is.na(weight),!is.na(physical_3plus))
+p <- ggplot(yrb_plot, aes(x = physical_3plus,y = weight))+
+  geom_boxplot()
+p
+
+```
+
+### Exercise 3
+
+Make a side-by-side boxplot of physical_3plus and weight. Is there a relationship between these two variables? What did you expect and why?
+
+-
+
+...
+
+```{r code-Exercise4}
+summary(yrbss$weight)
+```
+
+### Exercise 4
+
+How many observations are we missing weights from?
+
+-There are 1004 NA values which correspond to missing weights.
+
+...
+
+```{r code-Exercise5}
+
+yrbss <- yrbss %>% 
+  mutate(physical_3plus = ifelse(yrbss$physically_active_7d > 2, "yes", "no"))
+
+yrbss
+
+```
+
+### Exercise 5
+
+Write the hypotheses for testing if the average weights are different for those who exercise at least times a week and those who don’t.
+
+-Null: Students who are active 3 or more days per week have the SAME mean weight as students who are not active 3 or more days per week.
+
+-Alternative: Students who are active 3 or more days per week have a different mean weight as students who are not active 3 or more days per week
+
+
+```{r code-Exercise6}
+
+obs_diff <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+null_dist <- yrbss %>%
+  specify(weight ~ physical_3plus) %>%
+  hypothesize(null = "independence") %>%
+  generate(reps = 1000, type = "permute") %>%
+  calculate(stat = "diff in means", order = c("yes", "no"))
+
+ggplot(data = null_dist, aes(x = stat)) +
+  geom_histogram()
+
+```
+
+### Exercise 6
+
+How many of these null permutations have a difference of at least obs_stat?
+
+-None of the null permutations have a difference of at least obs_stat.
+
+```{r code-Exercise7}
+
+null_dist %>%
+  get_p_value(obs_stat = obs_diff, direction = "two_sided")
+
+#sd
+yrbss %>% 
+  group_by(physical_3plus) %>% 
+  summarise(sd_weight = sd(weight, na.rm = TRUE))
+
+#mean
+yrbss %>% 
+  group_by(physical_3plus) %>% 
+  summarise(mean_weight = mean(weight, na.rm = TRUE))
+
+#sample size n
+yrbss %>% 
+  group_by(physical_3plus) %>% 
+  summarise(freq = table(weight)) %>%
+  summarise(n = sum(freq))
+
+x0_3 <- 66.67389
+n0_3 <- 4022
+s0_3 <- 17.63805
+x_3 <- 68.44847
+n_3 <- 8342
+s_3 <- 16.47832
+
+z = 1.96
+
+ub_0 <- x0_3 + z*(s0_3/sqrt(n0_3))
+lb_0 <- x0_3 - z*(s0_3/sqrt(n0_3))
+ub_0
+lb_0
+
+ub <- x_3 + z*(s_3/sqrt(n_3))
+lb <- x_3 - z*(s_3/sqrt(n_3))
+
+ub
+lb
+```
+
+### Exercise 7
+
+Construct and record a confidence interval for the difference between the weights of those who exercise at least three times a week and those who don’t, and interpret this interval in context of the data.
+
+-The standard deviation is 17.63805 for students who do are not active at least 3 days per week and 16.47832 for those who are.
+
+-The mean is 66.67389 for students who do are not active at least 3 days per week and 68.44847 for those who are.
+
+-We are 95% confident that students who exercise at least three times a week have a mean weight between 68.09485 kg and 68.80209 kg. Students who don't exercise at least three times a week have a mean weight between 66.12878 kg and 67.219 kg with 95% confidence.
+
+
+```{r code-Exercise8}
+
+height_data <- yrbss %>% select(height) %>% na.omit()
+
+meanheight <- mean(height_data$height)
+sd3 <- sd(height_data$height)
+max3 <- max(height_data$height)
+sdheight <- sd(height_data$height)
+stderrorheight <- sdheight / sqrt(nrow(height_data))
+
+max3
+
+meanheight + (2.5 * sd3)
+
+tvalueheight <- qt(.05/2, nrow(height_data) - 1, lower.tail = FALSE)
+rightintheight <- meanheight + tvalueheight * stderrorheight
+leftintheight <- meanheight - tvalueheight * stderrorheight
+
+leftintheight
+rightintheight
+
+```
+
+### Exercise 8
+
+Calculate a 95% confidence interval for the average height in meters (height) and interpret it in context.
+
+-The max of height_data is 2.11 and the mean plus 2.5 sd is 1.952984. 
+-The 95% confidence interval is from 1.689411 meters to 1.693071 meters.
+
+```{r code-Exercise9}
+
+tvalueheight <- qt(.1/2, nrow(height_data) - 1, lower.tail = FALSE)
+rightintheight <- meanheight + tvalueheight * stderrorheight
+leftintheight <- meanheight - tvalueheight * stderrorheight
+
+leftintheight
+rightintheight
+```
+
+### Exercise 9
+
+Calculate a new confidence interval for the same parameter at the 90% confidence level. Comment on the width of this interval versus the one obtained in the previous exercise.
+
+-The 90% confidence interval is from 1.69 meters to 1.693 meters 
+
+
+```{r code-Exercise10}
+
+height_exercise <- yrbss %>% 
+  filter(physical_3plus == "yes") %>% 
+  select(height) %>% 
+  na.omit()
+
+height_noexercise <- yrbss %>% 
+  filter(physical_3plus == "no") %>% 
+  select(height) %>% 
+  na.omit()
+
+# Box Plot
+boxplot(height_exercise$height, height_noexercise$height,
+        names = c("Exercise", "No Exercise"))
+
+
+mean4 <- mean(height_noexercise$height)
+sd4<- sd(height_noexercise$height)
+max4 <- max(height_noexercise$height)
+
+mean5 <- mean(height_exercise$height)
+sd5 <- sd(height_exercise$height)
+max5 <- max(height_exercise$height)
+
+max4
+mean4 + (2.5 * sd4)
+
+max5
+mean5 + (2.5 * sd5)
+
+# Standard Error
+meandiff <- mean5 - mean4
+stderror <- 
+  sqrt(
+  ((mean5^2) / nrow(height_exercise)) +
+  ((mean4^2) / nrow(height_noexercise))
+  )
+
+# T-Value and CI
+degfreedomht2 <- 4022-1
+tvalueht2 <- qt(.05/2, degfreedomht2, lower.tail = FALSE)
+rightintervalht <- meandiff + tvalueht2 * stderror
+leftintervalht <- meandiff - tvalueht2 * stderror
+
+leftintervalht
+rightintervalht
+
+# P-Value
+pvalueht2 <- 2*pt(tvalueht2,degfreedomht2, lower.tail = FALSE)
+
+pvalueht2
+
+```
+
+### Exercise 10
+
+Conduct a hypothesis test evaluating whether the average height is different for those who exercise at least three times a week and those who don’t.
+
+-The max of height_noexercise is 2.11 and the mean plus 2.5 sd is 1.922732.
+
+-The max of height_exercise is 2.11 and the mean plus 2.5 sd is 1.961452.
+
+-The 95% confidence interval is from -0.02552409 to 0.1007759.
+
+-The P-Value is 0.05...."If P is high, null will fly," so we fail to reject the null hypothesis.
+
+
+```{r code-Exercise11}
+
+yrbss %>% group_by(hours_tv_per_school_day) %>% summarise(n())
+
+```
+
+### Exercise 11
+
+Now, a non-inference task: Determine the number of different options there are in the dataset for the hours_tv_per_school_day there are.
+
+-There are 7 different options in the dataset hours_tv_per_school_day, not including those labeled "NA".
+
+
+```{r code-Exercise12}
+
+yrbss <- yrbss %>%
+  mutate(sleep_less = ifelse(yrbss$school_night_hours_sleep < 6, "yes", "no"))
+ 
+weight_less <- yrbss %>% 
+  select(weight, sleep_less) %>% 
+  filter(sleep_less == "yes") %>%
+  na.omit()
+
+weight_more <- yrbss %>% 
+  select(weight, sleep_less) %>% 
+  filter(sleep_less == "no") %>%
+  na.omit()
+
+boxplot(weight_less$weight, weight_more$weight,
+        names = c("Less Sleep", "More Sleep"))
+
+mn <- mean(weight_less$weight)
+sd <- sd(weight_less$weight)
+max <- max(weight_less$weight)
+max
+
+mn1 <- mean(weight_more$weight)
+sd2 <- sd(weight_more$weight)
+max2 <- max(weight_more$weight)
+
+mean_diff <- mn1 - mn
+sd <- 
+  sqrt(
+  ((mn1^2) / nrow(weight_more)) +
+  ((mn^2) / nrow(weight_less))
+  )
+
+df <- 2492-1
+t <- qt(.05/2, df, lower.tail = FALSE)
+
+upper_ci <- mean_diff + t * sd
+lower_ci <- mean_diff - t * sd
+
+c(lower_ci ,upper_ci)
+
+
+p_value <- 2*pt(t,df, lower.tail = FALSE)
+p_value
+
+```
+
+### Exercise 12
+
+Come up with a research question evaluating the relationship between height or weight and sleep. Formulate the question in a way that it can be answered using a hypothesis test and/or a confidence interval. Report the statistical results, and also provide an explanation in plain language. Be sure to check all assumptions, state your α level, and conclude in context.
+
+-Question: Is there evidence that students who weigh more than the mean weight sleep more than students who are lighter than the mean weight?
+
+Null: There is a relationship between weight and sleep
+
+Alternative: There is no relationship between weight and sleep
+
+95% confident level
+
+Since the P-value equals alpha, we fail to reject the null hypothesis. We can't determine that a relationship exists between weight and sleep.
